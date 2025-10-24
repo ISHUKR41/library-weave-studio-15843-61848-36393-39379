@@ -14,6 +14,7 @@ import pubgQR from "@/assets/pubg_qr.jpg";
 import { useDropzone } from "react-dropzone";
 import { bgmiDuoSchema } from "@/lib/validationSchemas";
 import { z } from "zod";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type BGMIDuoFormData = z.infer<typeof bgmiDuoSchema>;
 
@@ -25,9 +26,12 @@ const BGMIDuoForm = ({ entryFee }: BGMIDuoFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [screenshot, setScreenshot] = useState<File | null>(null);
   const [screenshotPreview, setScreenshotPreview] = useState<string>("");
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<BGMIDuoFormData>({
+  const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<BGMIDuoFormData>({
     resolver: zodResolver(bgmiDuoSchema),
-    mode: "onChange"
+    mode: "onChange",
+    defaultValues: {
+      youtubeVote: true
+    }
   });
   const queryClient = useQueryClient();
 
@@ -43,32 +47,29 @@ const BGMIDuoForm = ({ entryFee }: BGMIDuoFormProps) => {
   });
 
   const onSubmit = async (formData: BGMIDuoFormData) => {
-    console.log("Duo form submission started", formData);
-    
     if (!screenshot) {
       toast.error("Please upload payment screenshot");
-      console.error("No screenshot uploaded");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      console.log("Uploading screenshot...");
+      // Step 1: Upload screenshot to Supabase Storage
+      // Generate a unique filename using timestamp and random number
       const fileExt = screenshot.name.split('.').pop();
       const fileName = `${Date.now()}_${Math.random()}.${fileExt}`;
+      
       const { error: uploadError } = await supabase.storage
         .from('payment-screenshots')
         .upload(fileName, screenshot);
 
       if (uploadError) {
-        console.error("Upload error:", uploadError);
         throw uploadError;
       }
 
-      console.log("Screenshot uploaded successfully, inserting data...");
-      const path = fileName;
-
-      const { error: insertError } = await (supabase as any)
+      // Step 2: Insert registration data into Supabase database
+      // Using the bgmi_registrations table with proper column mapping
+      const { error: insertError } = await supabase
         .from('bgmi_registrations')
         .insert({
           tournament_type: 'duo',
@@ -82,29 +83,31 @@ const BGMIDuoForm = ({ entryFee }: BGMIDuoFormProps) => {
           player3_id: null,
           player4_name: null,
           player4_id: null,
-          payment_screenshot_url: path,
+          payment_screenshot_url: fileName,
           transaction_id: formData.transactionId,
           youtube_streaming_vote: formData.youtubeVote,
         });
 
       if (insertError) {
-        console.error("Insert error:", insertError);
         throw insertError;
       }
 
-      console.log("Registration successful!");
+      // Step 3: Show success message and reset form
       toast.success("Registration submitted successfully! Awaiting admin approval");
       reset();
       setScreenshot(null);
       setScreenshotPreview("");
+      
+      // Step 4: Invalidate queries to refresh registration count
       queryClient.invalidateQueries({ queryKey: ['bgmi-duo-count'] });
     } catch (error: any) {
-      console.error("Registration error:", error);
       toast.error(error.message || "Registration failed");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const youtubeVote = watch("youtubeVote");
 
   return (
     <motion.div
@@ -112,14 +115,15 @@ const BGMIDuoForm = ({ entryFee }: BGMIDuoFormProps) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
     >
-      <Card className="p-6 md:p-8 bg-gradient-card border-border/50">
-        <h2 className="text-2xl font-bold mb-6">BGMI Duo Registration</h2>
+      <Card className="p-6 md:p-8 bg-gradient-card border-border/50" data-testid="card-bgmi-duo-form">
+        <h2 className="text-2xl font-bold mb-6" data-testid="text-form-title">BGMI Duo Registration</h2>
         
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="teamName">Team Name *</Label>
             <Input
               id="teamName"
+              data-testid="input-team-name"
               {...register("teamName")}
               placeholder="Enter team name"
               className="bg-background"
@@ -137,6 +141,7 @@ const BGMIDuoForm = ({ entryFee }: BGMIDuoFormProps) => {
                 <Label htmlFor="teamLeaderName">Full Name *</Label>
                 <Input
                   id="teamLeaderName"
+                  data-testid="input-team-leader-name"
                   {...register("teamLeaderName")}
                   placeholder="Enter full name"
                   className="bg-background"
@@ -150,6 +155,7 @@ const BGMIDuoForm = ({ entryFee }: BGMIDuoFormProps) => {
                 <Label htmlFor="teamLeaderId">Game ID *</Label>
                  <Input
                   id="teamLeaderId"
+                  data-testid="input-team-leader-id"
                   type="tel"
                   inputMode="numeric"
                   pattern="[0-9]*"
@@ -167,6 +173,7 @@ const BGMIDuoForm = ({ entryFee }: BGMIDuoFormProps) => {
                 <Label htmlFor="whatsapp">WhatsApp Number *</Label>
                  <Input
                   id="whatsapp"
+                  data-testid="input-whatsapp"
                   type="tel"
                   inputMode="numeric"
                   pattern="[0-9]{10}"
@@ -190,6 +197,7 @@ const BGMIDuoForm = ({ entryFee }: BGMIDuoFormProps) => {
                 <Label htmlFor="player2Name">Full Name *</Label>
                 <Input
                   id="player2Name"
+                  data-testid="input-player2-name"
                   {...register("player2Name")}
                   placeholder="Enter full name"
                   className="bg-background"
@@ -202,6 +210,7 @@ const BGMIDuoForm = ({ entryFee }: BGMIDuoFormProps) => {
                 <Label htmlFor="player2Id">Game ID *</Label>
                  <Input
                   id="player2Id"
+                  data-testid="input-player2-id"
                   type="tel"
                   inputMode="numeric"
                   pattern="[0-9]*"
@@ -226,6 +235,7 @@ const BGMIDuoForm = ({ entryFee }: BGMIDuoFormProps) => {
                 src={pubgQR} 
                 alt="Payment QR Code" 
                 className="w-64 h-64 object-contain border-4 border-primary rounded-lg"
+                data-testid="img-qr-code"
               />
             </div>
 
@@ -233,6 +243,7 @@ const BGMIDuoForm = ({ entryFee }: BGMIDuoFormProps) => {
               <Label htmlFor="transactionId">Transaction ID *</Label>
               <Input
                 id="transactionId"
+                data-testid="input-transaction-id"
                 {...register("transactionId")}
                 placeholder="Enter UPI transaction ID"
                 className="bg-background"
@@ -249,6 +260,7 @@ const BGMIDuoForm = ({ entryFee }: BGMIDuoFormProps) => {
                 className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
                   isDragActive ? 'border-primary bg-primary/10' : 'border-border hover:border-primary'
                 }`}
+                data-testid="dropzone-screenshot"
               >
                 <input {...getInputProps()} />
                 <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
@@ -260,7 +272,7 @@ const BGMIDuoForm = ({ entryFee }: BGMIDuoFormProps) => {
               </div>
               {screenshotPreview && (
                 <div className="mt-4">
-                  <img src={screenshotPreview} alt="Preview" className="w-full max-w-md mx-auto rounded-lg border border-border" />
+                  <img src={screenshotPreview} alt="Preview" className="w-full max-w-md mx-auto rounded-lg border border-border" data-testid="img-screenshot-preview" />
                 </div>
               )}
             </div>
@@ -269,12 +281,11 @@ const BGMIDuoForm = ({ entryFee }: BGMIDuoFormProps) => {
           <div className="space-y-4 pt-4 border-t border-border">
             <h3 className="text-lg font-semibold text-primary">Additional Options</h3>
             <div className="flex items-center space-x-2 p-4 bg-background rounded-lg border border-border">
-              <input
-                type="checkbox"
+              <Checkbox
                 id="youtubeVote"
-                {...register("youtubeVote")}
-                defaultChecked={true}
-                className="h-5 w-5 rounded border-primary text-primary focus:ring-primary"
+                data-testid="checkbox-youtube-vote"
+                checked={youtubeVote}
+                onCheckedChange={(checked) => setValue("youtubeVote", checked as boolean)}
               />
               <Label htmlFor="youtubeVote" className="text-base cursor-pointer">
                 I want this match to be streamed on YouTube
@@ -287,6 +298,7 @@ const BGMIDuoForm = ({ entryFee }: BGMIDuoFormProps) => {
             className="w-full"
             size="lg"
             disabled={isSubmitting}
+            data-testid="button-submit"
           >
             {isSubmitting ? (
               <>

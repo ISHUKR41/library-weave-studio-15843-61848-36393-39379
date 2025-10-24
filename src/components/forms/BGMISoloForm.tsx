@@ -14,6 +14,7 @@ import pubgQR from "@/assets/pubg_qr.jpg";
 import { useDropzone } from "react-dropzone";
 import { bgmiSoloSchema } from "@/lib/validationSchemas";
 import { z } from "zod";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type BGMISoloFormData = z.infer<typeof bgmiSoloSchema>;
 
@@ -25,9 +26,12 @@ const BGMISoloForm = ({ entryFee }: BGMISoloFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [screenshot, setScreenshot] = useState<File | null>(null);
   const [screenshotPreview, setScreenshotPreview] = useState<string>("");
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<BGMISoloFormData>({
+  const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<BGMISoloFormData>({
     resolver: zodResolver(bgmiSoloSchema),
-    mode: "onChange"
+    mode: "onChange",
+    defaultValues: {
+      youtubeVote: true
+    }
   });
   const queryClient = useQueryClient();
 
@@ -43,32 +47,29 @@ const BGMISoloForm = ({ entryFee }: BGMISoloFormProps) => {
   });
 
   const onSubmit = async (formData: BGMISoloFormData) => {
-    console.log("Form submission started", formData);
-    
     if (!screenshot) {
       toast.error("Please upload payment screenshot");
-      console.error("No screenshot uploaded");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      console.log("Uploading screenshot...");
+      // Step 1: Upload screenshot to Supabase Storage
+      // Generate a unique filename using timestamp and random number
       const fileExt = screenshot.name.split('.').pop();
       const fileName = `${Date.now()}_${Math.random()}.${fileExt}`;
+      
       const { error: uploadError } = await supabase.storage
         .from('payment-screenshots')
         .upload(fileName, screenshot);
 
       if (uploadError) {
-        console.error("Upload error:", uploadError);
         throw uploadError;
       }
 
-      console.log("Screenshot uploaded successfully, inserting data...");
-      const path = fileName;
-
-      const { error: insertError } = await (supabase as any)
+      // Step 2: Insert registration data into Supabase database
+      // Using the bgmi_registrations table with proper column mapping
+      const { error: insertError } = await supabase
         .from('bgmi_registrations')
         .insert({
           tournament_type: 'solo',
@@ -82,29 +83,31 @@ const BGMISoloForm = ({ entryFee }: BGMISoloFormProps) => {
           player3_id: null,
           player4_name: null,
           player4_id: null,
-          payment_screenshot_url: path,
+          payment_screenshot_url: fileName,
           transaction_id: formData.transactionId,
           youtube_streaming_vote: formData.youtubeVote,
         });
 
       if (insertError) {
-        console.error("Insert error:", insertError);
         throw insertError;
       }
 
-      console.log("Registration successful!");
+      // Step 3: Show success message and reset form
       toast.success("Registration submitted successfully! Awaiting admin approval");
       reset();
       setScreenshot(null);
       setScreenshotPreview("");
+      
+      // Step 4: Invalidate queries to refresh registration count
       queryClient.invalidateQueries({ queryKey: ['bgmi-solo-count'] });
     } catch (error: any) {
-      console.error("Registration error:", error);
       toast.error(error.message || "Registration failed");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const youtubeVote = watch("youtubeVote");
 
   return (
     <motion.div
@@ -112,8 +115,8 @@ const BGMISoloForm = ({ entryFee }: BGMISoloFormProps) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
     >
-      <Card className="p-6 md:p-8 bg-gradient-card border-border/50">
-        <h2 className="text-2xl font-bold mb-6">BGMI Solo Registration</h2>
+      <Card className="p-6 md:p-8 bg-gradient-card border-border/50" data-testid="card-bgmi-solo-form">
+        <h2 className="text-2xl font-bold mb-6" data-testid="text-form-title">BGMI Solo Registration</h2>
         
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-4">
@@ -124,9 +127,10 @@ const BGMISoloForm = ({ entryFee }: BGMISoloFormProps) => {
                 <Label htmlFor="teamLeaderName">Full Name *</Label>
                 <Input
                   id="teamLeaderName"
+                  data-testid="input-team-leader-name"
                   {...register("teamLeaderName")}
-                  placeholder="Enter full name"
-                  className="bg-background"
+                  placeholder="Enter your full name"
+                  className="bg-background/50"
                 />
                 {errors.teamLeaderName && (
                   <p className="text-sm text-destructive">{errors.teamLeaderName.message}</p>
@@ -134,120 +138,127 @@ const BGMISoloForm = ({ entryFee }: BGMISoloFormProps) => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="teamLeaderId">Game ID *</Label>
+                <Label htmlFor="teamLeaderId">Player ID *</Label>
                 <Input
                   id="teamLeaderId"
-                  type="tel"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
+                  data-testid="input-team-leader-id"
                   {...register("teamLeaderId")}
-                  placeholder="Enter game ID"
-                  className="bg-background"
-                  onInput={(e) => { e.currentTarget.value = e.currentTarget.value.replace(/[^0-9]/g,'').slice(0,20); }}
+                  placeholder="Enter your player ID"
+                  className="bg-background/50"
                 />
                 {errors.teamLeaderId && (
                   <p className="text-sm text-destructive">{errors.teamLeaderId.message}</p>
                 )}
               </div>
-
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="whatsapp">WhatsApp Number *</Label>
-                <Input
-                  id="whatsapp"
-                  type="tel"
-                  inputMode="numeric"
-                  pattern="[0-9]{10}"
-                  {...register("whatsapp")}
-                  placeholder="Enter 10-digit WhatsApp number"
-                  className="bg-background"
-                  maxLength={10}
-                  onInput={(e) => { e.currentTarget.value = e.currentTarget.value.replace(/[^0-9]/g,'').slice(0,10); }}
-                />
-                {errors.whatsapp && (
-                  <p className="text-sm text-destructive">{errors.whatsapp.message}</p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4 pt-4 border-t border-border">
-            <h3 className="text-lg font-semibold text-primary">Payment Details</h3>
-            
-            <div className="flex flex-col items-center space-y-4 p-6 bg-background rounded-lg">
-              <p className="text-center font-semibold">Scan QR to Pay ₹{entryFee}</p>
-              <img 
-                src={pubgQR} 
-                alt="Payment QR Code" 
-                className="w-64 h-64 object-contain border-4 border-primary rounded-lg"
-              />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="transactionId">Transaction ID *</Label>
+              <Label htmlFor="whatsapp">WhatsApp Number *</Label>
               <Input
-                id="transactionId"
-                {...register("transactionId")}
-                placeholder="Enter UPI transaction ID"
-                className="bg-background"
+                id="whatsapp"
+                data-testid="input-whatsapp"
+                {...register("whatsapp")}
+                placeholder="Enter WhatsApp number"
+                className="bg-background/50"
               />
-              {errors.transactionId && (
-                <p className="text-sm text-destructive">{errors.transactionId.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>Payment Screenshot *</Label>
-              <div
-                {...getRootProps()}
-                className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-                  isDragActive ? 'border-primary bg-primary/10' : 'border-border hover:border-primary'
-                }`}
-              >
-                <input {...getInputProps()} />
-                <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">
-                  {isDragActive
-                    ? "Drop the screenshot here"
-                    : "Drag & drop payment screenshot or click to browse"}
-                </p>
-              </div>
-              {screenshotPreview && (
-                <div className="mt-4">
-                  <img src={screenshotPreview} alt="Preview" className="w-full max-w-md mx-auto rounded-lg border border-border" />
-                </div>
+              {errors.whatsapp && (
+                <p className="text-sm text-destructive">{errors.whatsapp.message}</p>
               )}
             </div>
           </div>
 
-          <div className="space-y-4 pt-4 border-t border-border">
-            <h3 className="text-lg font-semibold text-primary">Additional Options</h3>
-            <div className="flex items-center space-x-2 p-4 bg-background rounded-lg border border-border">
-              <input
-                type="checkbox"
-                id="youtubeVote"
-                {...register("youtubeVote")}
-                defaultChecked={true}
-                className="h-5 w-5 rounded border-primary text-primary focus:ring-primary"
-              />
-              <Label htmlFor="youtubeVote" className="text-base cursor-pointer">
-                I want this match to be streamed on YouTube
-              </Label>
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-primary">Payment Details</h3>
+            <p className="text-sm text-muted-foreground">Entry Fee: ₹{entryFee}</p>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label>UPI QR Code</Label>
+                <div className="border border-border rounded-lg p-4 bg-background/50">
+                  <img 
+                    src={pubgQR} 
+                    alt="Payment QR Code" 
+                    className="w-full max-w-xs mx-auto rounded-lg"
+                    data-testid="img-qr-code"
+                  />
+                  <p className="text-xs text-muted-foreground mt-2 text-center">
+                    Scan to pay ₹{entryFee}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="transactionId">Transaction ID *</Label>
+                  <Input
+                    id="transactionId"
+                    data-testid="input-transaction-id"
+                    {...register("transactionId")}
+                    placeholder="Enter transaction ID"
+                    className="bg-background/50"
+                  />
+                  {errors.transactionId && (
+                    <p className="text-sm text-destructive">{errors.transactionId.message}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Upload Payment Screenshot *</Label>
+                  <div
+                    {...getRootProps()}
+                    className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
+                      ${isDragActive ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'}
+                      ${screenshotPreview ? 'bg-background/50' : 'bg-background/30'}`}
+                    data-testid="dropzone-screenshot"
+                  >
+                    <input {...getInputProps()} />
+                    {screenshotPreview ? (
+                      <div className="space-y-2">
+                        <img src={screenshotPreview} alt="Screenshot preview" className="max-h-32 mx-auto rounded" data-testid="img-screenshot-preview" />
+                        <p className="text-sm text-muted-foreground">Click to change</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <Upload className="w-8 h-8 mx-auto text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">
+                          {isDragActive ? 'Drop the image here' : 'Drag & drop or click to select'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="youtubeVote"
+              data-testid="checkbox-youtube-vote"
+              checked={youtubeVote}
+              onCheckedChange={(checked) => setValue("youtubeVote", checked as boolean)}
+            />
+            <Label 
+              htmlFor="youtubeVote"
+              className="text-sm font-normal cursor-pointer"
+            >
+              I want this tournament to be streamed on YouTube
+            </Label>
           </div>
 
           <Button
             type="submit"
             className="w-full"
-            size="lg"
             disabled={isSubmitting}
+            data-testid="button-submit"
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Submitting...
               </>
             ) : (
-              "Submit Registration"
+              'Submit Registration'
             )}
           </Button>
         </form>

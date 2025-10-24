@@ -14,6 +14,7 @@ import pubgQR from "@/assets/pubg_qr.jpg";
 import { useDropzone } from "react-dropzone";
 import { freeFireSquadSchema } from "@/lib/validationSchemas";
 import { z } from "zod";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type FreeFireSquadFormData = z.infer<typeof freeFireSquadSchema>;
 
@@ -25,9 +26,12 @@ const FreeFireSquadForm = ({ entryFee }: FreeFireSquadFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [screenshot, setScreenshot] = useState<File | null>(null);
   const [screenshotPreview, setScreenshotPreview] = useState<string>("");
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<FreeFireSquadFormData>({
+  const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<FreeFireSquadFormData>({
     resolver: zodResolver(freeFireSquadSchema),
-    mode: "onChange"
+    mode: "onChange",
+    defaultValues: {
+      youtubeVote: true
+    }
   });
   const queryClient = useQueryClient();
 
@@ -43,32 +47,29 @@ const FreeFireSquadForm = ({ entryFee }: FreeFireSquadFormProps) => {
   });
 
   const onSubmit = async (formData: FreeFireSquadFormData) => {
-    console.log("FreeFire Squad form submission started", formData);
-    
     if (!screenshot) {
       toast.error("Please upload payment screenshot");
-      console.error("No screenshot uploaded");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      console.log("Uploading screenshot...");
+      // Step 1: Upload screenshot to Supabase Storage
+      // Generate a unique filename using timestamp and random number
       const fileExt = screenshot.name.split('.').pop();
       const fileName = `${Date.now()}_${Math.random()}.${fileExt}`;
+      
       const { error: uploadError } = await supabase.storage
         .from('payment-screenshots')
         .upload(fileName, screenshot);
 
       if (uploadError) {
-        console.error("Upload error:", uploadError);
         throw uploadError;
       }
 
-      console.log("Screenshot uploaded successfully, inserting data...");
-      const path = fileName;
-
-      const { error: insertError } = await (supabase as any)
+      // Step 2: Insert registration data into Supabase database
+      // Using the freefire_registrations table with proper column mapping
+      const { error: insertError } = await supabase
         .from('freefire_registrations')
         .insert({
           tournament_type: 'squad',
@@ -82,29 +83,31 @@ const FreeFireSquadForm = ({ entryFee }: FreeFireSquadFormProps) => {
           player3_id: formData.player3Id,
           player4_name: formData.player4Name,
           player4_id: formData.player4Id,
-          payment_screenshot_url: path,
+          payment_screenshot_url: fileName,
           transaction_id: formData.transactionId,
           youtube_streaming_vote: formData.youtubeVote,
         });
 
       if (insertError) {
-        console.error("Insert error:", insertError);
         throw insertError;
       }
 
-      console.log("Registration successful!");
+      // Step 3: Show success message and reset form
       toast.success("Registration submitted successfully! Awaiting admin approval");
       reset();
       setScreenshot(null);
       setScreenshotPreview("");
+      
+      // Step 4: Invalidate queries to refresh registration count
       queryClient.invalidateQueries({ queryKey: ['freefire-squad-count'] });
     } catch (error: any) {
-      console.error("Registration error:", error);
       toast.error(error.message || "Registration failed");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const youtubeVote = watch("youtubeVote");
 
   return (
     <motion.div
@@ -112,8 +115,8 @@ const FreeFireSquadForm = ({ entryFee }: FreeFireSquadFormProps) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
     >
-      <Card className="p-6 md:p-8 bg-gradient-card border-border/50">
-        <h2 className="text-2xl font-bold mb-6">Free Fire Squad Registration</h2>
+      <Card className="p-6 md:p-8 bg-gradient-card border-border/50" data-testid="card-freefire-squad-form">
+        <h2 className="text-2xl font-bold mb-6" data-testid="text-form-title">Free Fire Squad Registration</h2>
         
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-2">
@@ -337,12 +340,11 @@ const FreeFireSquadForm = ({ entryFee }: FreeFireSquadFormProps) => {
           <div className="space-y-4 pt-4 border-t border-border">
             <h3 className="text-lg font-semibold text-primary">Additional Options</h3>
             <div className="flex items-center space-x-2 p-4 bg-background rounded-lg border border-border">
-              <input
-                type="checkbox"
+              <Checkbox
                 id="youtubeVote"
-                {...register("youtubeVote")}
-                defaultChecked={true}
-                className="h-5 w-5 rounded border-primary text-primary focus:ring-primary"
+                data-testid="checkbox-youtube-vote"
+                checked={youtubeVote}
+                onCheckedChange={(checked) => setValue("youtubeVote", checked as boolean)}
               />
               <Label htmlFor="youtubeVote" className="text-base cursor-pointer">
                 I want this match to be streamed on YouTube
@@ -355,6 +357,7 @@ const FreeFireSquadForm = ({ entryFee }: FreeFireSquadFormProps) => {
             className="w-full"
             size="lg"
             disabled={isSubmitting}
+            data-testid="button-submit"
           >
             {isSubmitting ? (
               <>
