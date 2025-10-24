@@ -27,6 +27,7 @@ export type GameType = 'bgmi' | 'freefire';
  * @param tournamentType - 'solo', 'duo', or 'squad'
  * @param status - Optional: filter by status (default: 'approved')
  * @returns Promise<number> - Count of registrations
+ * @throws Error if database query fails
  */
 export async function getRegistrationCount(
   game: GameType,
@@ -43,7 +44,7 @@ export async function getRegistrationCount(
 
   if (error) {
     console.error('Error fetching registration count:', error);
-    return 0;
+    throw new Error(`Failed to fetch registration count: ${error.message}`);
   }
 
   return count || 0;
@@ -55,6 +56,7 @@ export async function getRegistrationCount(
  * @param tournamentType - 'solo', 'duo', or 'squad'
  * @param status - Optional: filter by status
  * @returns Promise with registrations array
+ * @throws Error if database query fails
  */
 export async function getRegistrations(
   game: GameType,
@@ -77,7 +79,7 @@ export async function getRegistrations(
 
   if (error) {
     console.error('Error fetching registrations:', error);
-    return [];
+    throw new Error(`Failed to fetch registrations: ${error.message}`);
   }
 
   return data || [];
@@ -88,13 +90,14 @@ export async function getRegistrations(
  * @param game - 'bgmi' or 'freefire'
  * @param registrationId - The ID of the registration to update
  * @param newStatus - 'approved' or 'rejected'
- * @returns Promise<boolean> - Success status
+ * @returns Promise<void>
+ * @throws Error if update fails
  */
 export async function updateRegistrationStatus(
   game: GameType,
   registrationId: string,
   newStatus: 'approved' | 'rejected'
-): Promise<boolean> {
+): Promise<void> {
   const table = game === 'bgmi' ? 'bgmi_registrations' : 'freefire_registrations';
   
   const { error } = await supabase
@@ -104,18 +107,17 @@ export async function updateRegistrationStatus(
 
   if (error) {
     console.error('Error updating registration status:', error);
-    return false;
+    throw new Error(`Failed to update registration status: ${error.message}`);
   }
-
-  return true;
 }
 
 /**
  * Upload payment screenshot to Supabase Storage
  * @param file - The image file to upload
- * @returns Promise<string | null> - File path or null if error
+ * @returns Promise<string> - File path
+ * @throws Error if upload fails
  */
-export async function uploadPaymentScreenshot(file: File): Promise<string | null> {
+export async function uploadPaymentScreenshot(file: File): Promise<string> {
   const fileExt = file.name.split('.').pop();
   const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
   
@@ -125,7 +127,7 @@ export async function uploadPaymentScreenshot(file: File): Promise<string | null
 
   if (error) {
     console.error('Error uploading screenshot:', error);
-    return null;
+    throw new Error(`Failed to upload payment screenshot: ${error.message}`);
   }
 
   return fileName;
@@ -147,41 +149,39 @@ export function getPaymentScreenshotUrl(fileName: string): string {
 /**
  * Create a new BGMI registration
  * @param registration - Registration data
- * @returns Promise<boolean> - Success status
+ * @returns Promise<void>
+ * @throws Error if registration creation fails
  */
 export async function createBGMIRegistration(
   registration: BGMIRegistrationInsert
-): Promise<boolean> {
+): Promise<void> {
   const { error } = await supabase
     .from('bgmi_registrations')
     .insert(registration);
 
   if (error) {
     console.error('Error creating BGMI registration:', error);
-    return false;
+    throw new Error(`Failed to create BGMI registration: ${error.message}`);
   }
-
-  return true;
 }
 
 /**
  * Create a new Free Fire registration
  * @param registration - Registration data
- * @returns Promise<boolean> - Success status
+ * @returns Promise<void>
+ * @throws Error if registration creation fails
  */
 export async function createFreeFireRegistration(
   registration: FreeFireRegistrationInsert
-): Promise<boolean> {
+): Promise<void> {
   const { error } = await supabase
     .from('freefire_registrations')
     .insert(registration);
 
   if (error) {
     console.error('Error creating Free Fire registration:', error);
-    return false;
+    throw new Error(`Failed to create Free Fire registration: ${error.message}`);
   }
-
-  return true;
 }
 
 /**

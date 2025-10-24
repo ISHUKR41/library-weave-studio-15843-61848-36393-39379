@@ -78,8 +78,12 @@ export function useSlotAvailability(
 /**
  * Hook to update registration status (approve/reject)
  * @param game - 'bgmi' or 'freefire'
+ * @param tournamentType - 'solo', 'duo', or 'squad'
  */
-export function useUpdateRegistrationStatus(game: GameType) {
+export function useUpdateRegistrationStatus(
+  game: GameType,
+  tournamentType: TournamentType
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -90,15 +94,19 @@ export function useUpdateRegistrationStatus(game: GameType) {
       registrationId: string;
       newStatus: 'approved' | 'rejected';
     }) => {
-      const success = await updateRegistrationStatus(game, registrationId, newStatus);
-      if (!success) {
-        throw new Error('Failed to update registration status');
-      }
-      return success;
+      await updateRegistrationStatus(game, registrationId, newStatus);
     },
     onSuccess: (_, variables) => {
-      // Invalidate all related queries to refresh data
-      queryClient.invalidateQueries({ queryKey: [`${game}`] });
+      // Invalidate all related queries to refresh data with proper query key matching
+      queryClient.invalidateQueries({ 
+        queryKey: [`${game}-${tournamentType}-registrations`] 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: [`${game}-${tournamentType}-count`] 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: [`${game}-${tournamentType}-slots-available`] 
+      });
       
       const statusText = variables.newStatus === 'approved' ? 'approved' : 'rejected';
       toast.success(`Registration ${statusText} successfully!`);
@@ -125,26 +133,25 @@ export function useSubmitBGMIRegistration() {
     }) => {
       // Upload screenshot first
       const fileName = await uploadPaymentScreenshot(screenshot);
-      if (!fileName) {
-        throw new Error('Failed to upload payment screenshot');
-      }
 
       // Create registration with screenshot URL
-      const success = await createBGMIRegistration({
+      await createBGMIRegistration({
         ...registration,
         payment_screenshot_url: fileName,
       });
-
-      if (!success) {
-        throw new Error('Failed to create registration');
-      }
-
-      return success;
     },
     onSuccess: (_, variables) => {
-      // Invalidate count queries to update slot availability
+      const tournamentType = variables.registration.tournament_type;
+      
+      // Invalidate all related queries to refresh data
       queryClient.invalidateQueries({ 
-        queryKey: [`bgmi-${variables.registration.tournament_type}-count`] 
+        queryKey: [`bgmi-${tournamentType}-count`] 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: [`bgmi-${tournamentType}-registrations`] 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: [`bgmi-${tournamentType}-slots-available`] 
       });
       
       toast.success('Registration submitted successfully! Awaiting admin approval');
@@ -171,26 +178,25 @@ export function useSubmitFreeFireRegistration() {
     }) => {
       // Upload screenshot first
       const fileName = await uploadPaymentScreenshot(screenshot);
-      if (!fileName) {
-        throw new Error('Failed to upload payment screenshot');
-      }
 
       // Create registration with screenshot URL
-      const success = await createFreeFireRegistration({
+      await createFreeFireRegistration({
         ...registration,
         payment_screenshot_url: fileName,
       });
-
-      if (!success) {
-        throw new Error('Failed to create registration');
-      }
-
-      return success;
     },
     onSuccess: (_, variables) => {
-      // Invalidate count queries to update slot availability
+      const tournamentType = variables.registration.tournament_type;
+      
+      // Invalidate all related queries to refresh data
       queryClient.invalidateQueries({ 
-        queryKey: [`freefire-${variables.registration.tournament_type}-count`] 
+        queryKey: [`freefire-${tournamentType}-count`] 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: [`freefire-${tournamentType}-registrations`] 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: [`freefire-${tournamentType}-slots-available`] 
       });
       
       toast.success('Registration submitted successfully! Awaiting admin approval');
