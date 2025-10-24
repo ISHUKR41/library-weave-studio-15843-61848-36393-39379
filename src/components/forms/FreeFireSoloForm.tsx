@@ -47,63 +47,86 @@ const FreeFireSoloForm = ({ entryFee }: FreeFireSoloFormProps) => {
   });
 
   const onSubmit = async (formData: FreeFireSoloFormData) => {
+    console.log("Starting Free Fire Solo registration submission...");
+    console.log("Form data:", formData);
+    
     if (!screenshot) {
+      console.error("Screenshot validation failed: No screenshot file");
       toast.error("Please upload payment screenshot");
       return;
     }
 
+    console.log("Screenshot file:", { 
+      name: screenshot.name, 
+      size: screenshot.size, 
+      type: screenshot.type 
+    });
+
     setIsSubmitting(true);
     try {
-      // Step 1: Upload screenshot to Supabase Storage
-      // Generate a unique filename using timestamp and random number
+      console.log("Step 1: Uploading screenshot to Supabase Storage...");
       const fileExt = screenshot.name.split('.').pop();
       const fileName = `${Date.now()}_${Math.random()}.${fileExt}`;
+      console.log("Generated filename:", fileName);
       
       const { error: uploadError } = await supabase.storage
         .from('payment-screenshots')
         .upload(fileName, screenshot);
 
       if (uploadError) {
-        throw uploadError;
+        console.error("Screenshot upload error:", uploadError);
+        throw new Error(`Failed to upload screenshot: ${uploadError.message}`);
       }
 
-      // Step 2: Insert registration data into Supabase database
-      // Using the freefire_registrations table with proper column mapping
+      console.log("Screenshot uploaded successfully!");
+      console.log("Step 2: Inserting registration to database...");
+
+      const registrationData = {
+        tournament_type: 'solo' as const,
+        team_name: null,
+        team_leader_name: formData.teamLeaderName,
+        team_leader_id: formData.teamLeaderId,
+        team_leader_whatsapp: formData.whatsapp,
+        player2_name: null,
+        player2_id: null,
+        player3_name: null,
+        player3_id: null,
+        player4_name: null,
+        player4_id: null,
+        payment_screenshot_url: fileName,
+        transaction_id: formData.transactionId,
+        youtube_streaming_vote: formData.youtubeVote,
+      };
+
+      console.log("Registration data to insert:", registrationData);
+
       const { error: insertError } = await supabase
         .from('freefire_registrations')
-        .insert({
-          tournament_type: 'solo',
-          team_name: null,
-          team_leader_name: formData.teamLeaderName,
-          team_leader_id: formData.teamLeaderId,
-          team_leader_whatsapp: formData.whatsapp,
-          player2_name: null,
-          player2_id: null,
-          player3_name: null,
-          player3_id: null,
-          player4_name: null,
-          player4_id: null,
-          payment_screenshot_url: fileName,
-          transaction_id: formData.transactionId,
-          youtube_streaming_vote: formData.youtubeVote,
-        });
+        .insert(registrationData);
 
       if (insertError) {
-        throw insertError;
+        console.error("Database insertion error:", insertError);
+        throw new Error(`Failed to save registration: ${insertError.message}`);
       }
 
-      // Step 3: Show success message and reset form
+      console.log("Registration saved to database successfully!");
+      console.log("Step 3: Success! Resetting form...");
+      
       toast.success("Registration submitted successfully! Awaiting admin approval");
       reset();
       setScreenshot(null);
       setScreenshotPreview("");
       
-      // Step 4: Invalidate queries to refresh registration count
+      console.log("Step 4: Invalidating React Query cache...");
       queryClient.invalidateQueries({ queryKey: ['freefire-solo-count'] });
+      console.log("Free Fire Solo registration complete!");
     } catch (error: any) {
-      toast.error(error.message || "Registration failed");
+      console.error("Registration submission failed:", error);
+      const errorMessage = error.message || "Registration failed. Please try again.";
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
+      console.log("Submission process ended");
     }
   };
 
