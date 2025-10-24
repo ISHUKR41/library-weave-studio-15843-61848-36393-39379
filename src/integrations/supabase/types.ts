@@ -14,7 +14,165 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      // BGMI Tournament Registrations Table
+      bgmi_registrations: {
+        Row: {
+          id: string
+          tournament_type: 'solo' | 'duo' | 'squad'
+          team_name: string | null
+          team_leader_name: string
+          team_leader_id: string
+          team_leader_whatsapp: string
+          player2_name: string | null
+          player2_id: string | null
+          player3_name: string | null
+          player3_id: string | null
+          player4_name: string | null
+          player4_id: string | null
+          payment_screenshot_url: string
+          transaction_id: string
+          status: 'pending' | 'approved' | 'rejected'
+          slot_number: number | null
+          youtube_streaming_vote: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          tournament_type: 'solo' | 'duo' | 'squad'
+          team_name?: string | null
+          team_leader_name: string
+          team_leader_id: string
+          team_leader_whatsapp: string
+          player2_name?: string | null
+          player2_id?: string | null
+          player3_name?: string | null
+          player3_id?: string | null
+          player4_name?: string | null
+          player4_id?: string | null
+          payment_screenshot_url: string
+          transaction_id: string
+          status?: 'pending' | 'approved' | 'rejected'
+          slot_number?: number | null
+          youtube_streaming_vote?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          tournament_type?: 'solo' | 'duo' | 'squad'
+          team_name?: string | null
+          team_leader_name?: string
+          team_leader_id?: string
+          team_leader_whatsapp?: string
+          player2_name?: string | null
+          player2_id?: string | null
+          player3_name?: string | null
+          player3_id?: string | null
+          player4_name?: string | null
+          player4_id?: string | null
+          payment_screenshot_url?: string
+          transaction_id?: string
+          status?: 'pending' | 'approved' | 'rejected'
+          slot_number?: number | null
+          youtube_streaming_vote?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      // Free Fire Tournament Registrations Table
+      freefire_registrations: {
+        Row: {
+          id: string
+          tournament_type: 'solo' | 'duo' | 'squad'
+          team_name: string | null
+          team_leader_name: string
+          team_leader_id: string
+          team_leader_whatsapp: string
+          player2_name: string | null
+          player2_id: string | null
+          player3_name: string | null
+          player3_id: string | null
+          player4_name: string | null
+          player4_id: string | null
+          payment_screenshot_url: string
+          transaction_id: string
+          status: 'pending' | 'approved' | 'rejected'
+          slot_number: number | null
+          youtube_streaming_vote: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          tournament_type: 'solo' | 'duo' | 'squad'
+          team_name?: string | null
+          team_leader_name: string
+          team_leader_id: string
+          team_leader_whatsapp: string
+          player2_name?: string | null
+          player2_id?: string | null
+          player3_name?: string | null
+          player3_id?: string | null
+          player4_name?: string | null
+          player4_id?: string | null
+          payment_screenshot_url: string
+          transaction_id: string
+          status?: 'pending' | 'approved' | 'rejected'
+          slot_number?: number | null
+          youtube_streaming_vote?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          tournament_type?: 'solo' | 'duo' | 'squad'
+          team_name?: string | null
+          team_leader_name?: string
+          team_leader_id?: string
+          team_leader_whatsapp?: string
+          player2_name?: string | null
+          player2_id?: string | null
+          player3_name?: string | null
+          player3_id?: string | null
+          player4_name?: string | null
+          player4_id?: string | null
+          payment_screenshot_url?: string
+          transaction_id?: string
+          status?: 'pending' | 'approved' | 'rejected'
+          slot_number?: number | null
+          youtube_streaming_vote?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      // Admin Users Table
+      admin_users: {
+        Row: {
+          id: string
+          email: string
+          password_hash: string
+          name: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          email: string
+          password_hash: string
+          name: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          email?: string
+          password_hash?: string
+          name?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
