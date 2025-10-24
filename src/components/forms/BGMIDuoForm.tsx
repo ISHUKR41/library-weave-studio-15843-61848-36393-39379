@@ -43,21 +43,29 @@ const BGMIDuoForm = ({ entryFee }: BGMIDuoFormProps) => {
   });
 
   const onSubmit = async (formData: BGMIDuoFormData) => {
+    console.log("Duo form submission started", formData);
+    
     if (!screenshot) {
       toast.error("Please upload payment screenshot");
+      console.error("No screenshot uploaded");
       return;
     }
 
     setIsSubmitting(true);
     try {
+      console.log("Uploading screenshot...");
       const fileExt = screenshot.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
+      const fileName = `${Date.now()}_${Math.random()}.${fileExt}`;
       const { error: uploadError } = await supabase.storage
         .from('payment-screenshots')
         .upload(fileName, screenshot);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        throw uploadError;
+      }
 
+      console.log("Screenshot uploaded successfully, inserting data...");
       const path = fileName;
 
       const { error: insertError } = await (supabase as any)
@@ -79,14 +87,19 @@ const BGMIDuoForm = ({ entryFee }: BGMIDuoFormProps) => {
           youtube_streaming_vote: formData.youtubeVote,
         });
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error("Insert error:", insertError);
+        throw insertError;
+      }
 
+      console.log("Registration successful!");
       toast.success("Registration submitted successfully! Awaiting admin approval");
       reset();
       setScreenshot(null);
       setScreenshotPreview("");
       queryClient.invalidateQueries({ queryKey: ['bgmi-duo-count'] });
     } catch (error: any) {
+      console.error("Registration error:", error);
       toast.error(error.message || "Registration failed");
     } finally {
       setIsSubmitting(false);

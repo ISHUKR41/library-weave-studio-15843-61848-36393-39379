@@ -49,18 +49,18 @@ const BGMITournament = () => {
     <div className="min-h-screen">
       <Navbar />
       
-      {/* Hero Section */}
+      {/* Hero Section with Background Video */}
       <section className="relative h-96 flex items-center justify-center overflow-hidden mt-16">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `url(${bgmiBanner})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
+        <video 
+          autoPlay 
+          loop 
+          muted 
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-background/80 to-background" />
-        </div>
+          <source src="https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/items/996110/3c34aebe5c0fc9f7b0e8c5e76ef6f60cc3d5da7e.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-gradient-to-b from-background/80 to-background" />
         
         <div className="relative z-10 text-center space-y-4">
           <motion.h1

@@ -52,7 +52,8 @@ export const bgmiDuoSchema = basePlayerSchema.extend({
   player2Id: z.string()
     .trim()
     .min(5, "Game ID must be at least 5 characters")
-    .max(20, "Game ID must be less than 20 characters"),
+    .max(20, "Game ID must be less than 20 characters")
+    .regex(/^\d+$/, "Game ID must contain only numbers"),
 });
 
 export const bgmiSquadSchema = bgmiDuoSchema.extend({
@@ -64,7 +65,8 @@ export const bgmiSquadSchema = bgmiDuoSchema.extend({
   player3Id: z.string()
     .trim()
     .min(5, "Game ID must be at least 5 characters")
-    .max(20, "Game ID must be less than 20 characters"),
+    .max(20, "Game ID must be less than 20 characters")
+    .regex(/^\d+$/, "Game ID must contain only numbers"),
   player4Name: z.string()
     .trim()
     .min(3, "Name must be at least 3 characters")
@@ -73,7 +75,8 @@ export const bgmiSquadSchema = bgmiDuoSchema.extend({
   player4Id: z.string()
     .trim()
     .min(5, "Game ID must be at least 5 characters")
-    .max(20, "Game ID must be less than 20 characters"),
+    .max(20, "Game ID must be less than 20 characters")
+    .regex(/^\d+$/, "Game ID must contain only numbers"),
 });
 
 // Free Fire Schemas
@@ -93,7 +96,8 @@ export const freeFireDuoSchema = basePlayerSchema.extend({
   player2Id: z.string()
     .trim()
     .min(5, "Game ID must be at least 5 characters")
-    .max(20, "Game ID must be less than 20 characters"),
+    .max(20, "Game ID must be less than 20 characters")
+    .regex(/^\d+$/, "Game ID must contain only numbers"),
 });
 
 export const freeFireSquadSchema = freeFireDuoSchema.extend({
@@ -105,7 +109,8 @@ export const freeFireSquadSchema = freeFireDuoSchema.extend({
   player3Id: z.string()
     .trim()
     .min(5, "Game ID must be at least 5 characters")
-    .max(20, "Game ID must be less than 20 characters"),
+    .max(20, "Game ID must be less than 20 characters")
+    .regex(/^\d+$/, "Game ID must contain only numbers"),
   player4Name: z.string()
     .trim()
     .min(3, "Name must be at least 3 characters")
@@ -114,5 +119,6 @@ export const freeFireSquadSchema = freeFireDuoSchema.extend({
   player4Id: z.string()
     .trim()
     .min(5, "Game ID must be at least 5 characters")
-    .max(20, "Game ID must be less than 20 characters"),
+    .max(20, "Game ID must be less than 20 characters")
+    .regex(/^\d+$/, "Game ID must contain only numbers"),
 });
