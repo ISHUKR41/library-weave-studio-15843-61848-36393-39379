@@ -150,6 +150,29 @@ All Supabase operations are fully typed using the generated `types.ts` file. Thi
 - Type checking for INSERT/UPDATE operations
 - Compile-time error detection
 
+## 🔑 Query Key Conventions
+
+**IMPORTANT:** All React Query query keys follow a strict naming convention to ensure cache invalidation works correctly:
+
+```typescript
+// Registration lists
+[`${game}-${tournamentType}-registrations`]
+// Examples: ['bgmi-solo-registrations'], ['freefire-squad-registrations']
+
+// Registration counts
+[`${game}-${tournamentType}-count`]
+// Examples: ['bgmi-duo-count'], ['freefire-solo-count']
+
+// Slot availability
+[`${game}-${tournamentType}-slots-available`]
+// Examples: ['bgmi-squad-slots-available'], ['freefire-duo-slots-available']
+```
+
+When adding new queries or mutations:
+- ✅ Always use the format: `[game]-[tournamentType]-[descriptor]`
+- ✅ Invalidate all related queries after mutations (registrations, count, slots-available)
+- ❌ Never use partial keys like `[game]` alone - they won't invalidate correctly
+
 ## 🚀 Deployment Checklist
 
 When deploying to Vercel:

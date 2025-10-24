@@ -67,13 +67,23 @@ Storage bucket:
 
 See **SUPABASE_SETUP.md** for complete setup guide.
 
-## Recent Changes
-- Migrated from Lovable to Replit
-- Maintained Supabase architecture (user preference)
-- Fixed all registration forms to use Supabase properly
-- Added comprehensive documentation
-- Removed unused backend dependencies
-- Configured for Vercel deployment
+## Recent Changes (October 24, 2025)
+- **Fixed critical Supabase integration bugs**:
+  - All helper functions now throw errors instead of hiding failures (prevents overbooking)
+  - Fixed React Query cache invalidation (admin approvals now update UI in real-time)
+- **Created comprehensive Supabase helper library**:
+  - Type-safe database operations in `src/integrations/supabase/lib/helpers.ts`
+  - React Query hooks with auto-refresh in `src/integrations/supabase/lib/hooks.ts`
+  - Detailed documentation and usage examples
+- **Enhanced environment variable documentation**:
+  - Updated `.env.example` with detailed comments
+  - Created `ENVIRONMENT_SETUP.md` with step-by-step setup guide
+  - Added Supabase README with best practices
+- **Verified all features working**:
+  - Video backgrounds on both BGMI and Free Fire pages ✓
+  - Real-time slot tracking (5-second refresh) ✓
+  - Registration forms with proper validation ✓
+  - Admin dashboard with approve/reject ✓
 
 ## Testing Checklist
 Before deployment:
