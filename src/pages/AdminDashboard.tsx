@@ -5,9 +5,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import RegistrationTable from "@/components/RegistrationTable";
+import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
 
 const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
@@ -17,19 +17,19 @@ const AdminDashboard = () => {
     checkAuth();
   }, []);
 
-  const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate("/admin");
+  const checkAuth = () => {
+    const isAdmin = localStorage.getItem("adminAuth");
+    if (!isAdmin) {
+      navigate("/admin/login");
     } else {
       setLoading(false);
     }
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
+  const handleLogout = () => {
+    localStorage.removeItem("adminAuth");
     toast.success("Logged out successfully");
-    navigate("/admin");
+    navigate("/admin/login");
   };
 
   if (loading) {
@@ -48,76 +48,56 @@ const AdminDashboard = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="space-y-6"
+          className="space-y-8"
         >
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="space-y-1">
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <div className="flex items-center justify-between">
+            <h1 className="text-4xl font-bold">
+              <AnimatedGradientText colors="from-purple-500 via-pink-500 to-red-500">
                 Admin Dashboard
-              </h1>
-              <p className="text-muted-foreground text-lg">
-                Manage tournament registrations and approvals
-              </p>
-            </div>
-            <Button 
-              onClick={handleLogout} 
+              </AnimatedGradientText>
+            </h1>
+            <Button
               variant="outline"
-              className="group hover:border-destructive hover:text-destructive transition-all"
+              onClick={handleLogout}
+              className="gap-2"
             >
-              <LogOut className="mr-2 h-4 w-4 group-hover:translate-x-[-2px] transition-transform" />
+              <LogOut className="h-4 w-4" />
               Logout
             </Button>
           </div>
 
-          <Tabs defaultValue="bgmi" className="space-y-6">
-            <TabsList className="grid w-full max-w-md grid-cols-2 h-12">
-              <TabsTrigger value="bgmi" className="text-base font-semibold">
-                BGMI Tournaments
-              </TabsTrigger>
-              <TabsTrigger value="freefire" className="text-base font-semibold">
-                Free Fire Tournaments
-              </TabsTrigger>
+          <Tabs defaultValue="bgmi-solo" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
+              <TabsTrigger value="bgmi-solo">BGMI Solo</TabsTrigger>
+              <TabsTrigger value="bgmi-duo">BGMI Duo</TabsTrigger>
+              <TabsTrigger value="bgmi-squad">BGMI Squad</TabsTrigger>
+              <TabsTrigger value="freefire-solo">FF Solo</TabsTrigger>
+              <TabsTrigger value="freefire-duo">FF Duo</TabsTrigger>
+              <TabsTrigger value="freefire-squad">FF Squad</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="bgmi" className="space-y-6">
-              <Tabs defaultValue="solo" className="space-y-6">
-                <TabsList className="grid w-full max-w-lg grid-cols-3">
-                  <TabsTrigger value="solo">Solo</TabsTrigger>
-                  <TabsTrigger value="duo">Duo</TabsTrigger>
-                  <TabsTrigger value="squad">Squad</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="solo">
-                  <RegistrationTable game="bgmi" type="solo" />
-                </TabsContent>
-                <TabsContent value="duo">
-                  <RegistrationTable game="bgmi" type="duo" />
-                </TabsContent>
-                <TabsContent value="squad">
-                  <RegistrationTable game="bgmi" type="squad" />
-                </TabsContent>
-              </Tabs>
+            <TabsContent value="bgmi-solo">
+              <RegistrationTable game="bgmi" type="solo" />
             </TabsContent>
 
-            <TabsContent value="freefire" className="space-y-6">
-              <Tabs defaultValue="solo" className="space-y-6">
-                <TabsList className="grid w-full max-w-lg grid-cols-3">
-                  <TabsTrigger value="solo">Solo</TabsTrigger>
-                  <TabsTrigger value="duo">Duo</TabsTrigger>
-                  <TabsTrigger value="squad">Squad</TabsTrigger>
-                </TabsList>
+            <TabsContent value="bgmi-duo">
+              <RegistrationTable game="bgmi" type="duo" />
+            </TabsContent>
 
-                <TabsContent value="solo">
-                  <RegistrationTable game="freefire" type="solo" />
-                </TabsContent>
-                <TabsContent value="duo">
-                  <RegistrationTable game="freefire" type="duo" />
-                </TabsContent>
-                <TabsContent value="squad">
-                  <RegistrationTable game="freefire" type="squad" />
-                </TabsContent>
-              </Tabs>
+            <TabsContent value="bgmi-squad">
+              <RegistrationTable game="bgmi" type="squad" />
+            </TabsContent>
+
+            <TabsContent value="freefire-solo">
+              <RegistrationTable game="freefire" type="solo" />
+            </TabsContent>
+
+            <TabsContent value="freefire-duo">
+              <RegistrationTable game="freefire" type="duo" />
+            </TabsContent>
+
+            <TabsContent value="freefire-squad">
+              <RegistrationTable game="freefire" type="squad" />
             </TabsContent>
           </Tabs>
         </motion.div>

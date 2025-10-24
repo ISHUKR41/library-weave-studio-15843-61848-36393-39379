@@ -3,6 +3,7 @@ import { Shield, AlertCircle, Info, FileText, Scale, UserCheck } from "lucide-re
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import Navbar from "@/components/Navbar";
+import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
 
 const Disclaimer = () => {
   const sections = [
@@ -107,8 +108,10 @@ const Disclaimer = () => {
           <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-primary rounded-full mb-6 shadow-glow">
             <FileText className="h-10 w-10 text-white" />
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Disclaimer
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <AnimatedGradientText colors="from-red-500 via-orange-500 to-yellow-600">
+              Disclaimer
+            </AnimatedGradientText>
           </h1>
           <p className="text-muted-foreground text-lg max-w-3xl mx-auto">
             Please read this disclaimer carefully before using TournamentPro services. By accessing and using our platform, you accept and agree to be bound by the terms outlined below.
@@ -150,7 +153,11 @@ const Disclaimer = () => {
           transition={{ duration: 0.5, delay: 0.6 }}
         >
           <Card className="p-8 bg-gradient-card border-border/50">
-            <h2 className="text-2xl font-bold mb-6 text-center">Important Points to Remember</h2>
+            <h2 className="text-2xl font-bold mb-6 text-center">
+              <AnimatedGradientText colors="from-indigo-500 via-purple-500 to-pink-600">
+                Important Points to Remember
+              </AnimatedGradientText>
+            </h2>
             <div className="grid md:grid-cols-2 gap-6">
               {additionalPoints.map((point, index) => (
                 <div 

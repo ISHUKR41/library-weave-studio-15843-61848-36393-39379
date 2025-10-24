@@ -7,6 +7,7 @@ import BGMISoloForm from "@/components/forms/BGMISoloForm";
 import BGMIDuoForm from "@/components/forms/BGMIDuoForm";
 import BGMISquadForm from "@/components/forms/BGMISquadForm";
 import bgmiBanner from "@/assets/bgmi-banner.jpg";
+import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
 
 const BGMITournament = () => {
   const [activeTab, setActiveTab] = useState("solo");
@@ -67,10 +68,9 @@ const BGMITournament = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-5xl md:text-6xl font-bold"
           >
-            <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent animate-gradient-x" style={{ backgroundSize: "200% auto" }}>
-              BGMI
-            </span>{" "}
-            <span className="text-foreground">Tournament</span>
+            <AnimatedGradientText colors="from-blue-500 via-purple-500 to-pink-500">
+              BGMI Tournament
+            </AnimatedGradientText>
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}

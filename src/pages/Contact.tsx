@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/accordion";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
+import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
 
 const contactSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(100),
@@ -130,8 +131,10 @@ const Contact = () => {
           transition={{ duration: 0.5 }}
           className="text-center mb-12"
         >
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Get In Touch
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <AnimatedGradientText colors="from-emerald-500 via-teal-500 to-cyan-600">
+              Get In Touch
+            </AnimatedGradientText>
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             Have questions about our tournaments? We're here to help! Reach out to us and we'll respond as soon as possible.
@@ -305,7 +308,9 @@ const Contact = () => {
         >
           <Card className="p-8 bg-gradient-card border-border/50">
             <h2 className="text-3xl font-bold mb-6 text-center">
-              Frequently Asked Questions
+              <AnimatedGradientText colors="from-yellow-500 via-orange-500 to-red-600">
+                Frequently Asked Questions
+              </AnimatedGradientText>
             </h2>
             <Accordion type="single" collapsible className="w-full">
               {faqs.map((faq, index) => (

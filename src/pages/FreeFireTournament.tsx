@@ -7,6 +7,7 @@ import FreeFireSoloForm from "@/components/forms/FreeFireSoloForm";
 import FreeFireDuoForm from "@/components/forms/FreeFireDuoForm";
 import FreeFireSquadForm from "@/components/forms/FreeFireSquadForm";
 import freeFireBanner from "@/assets/freefire-banner.jpg";
+import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
 
 const FreeFireTournament = () => {
   const [activeTab, setActiveTab] = useState("solo");
@@ -67,10 +68,9 @@ const FreeFireTournament = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-5xl md:text-6xl font-bold"
           >
-            <span className="bg-gradient-to-r from-orange-500 via-red-500 to-pink-600 bg-clip-text text-transparent animate-gradient-x" style={{ backgroundSize: "200% auto" }}>
-              Free Fire
-            </span>{" "}
-            <span className="text-foreground">Tournament</span>
+            <AnimatedGradientText colors="from-orange-500 via-red-500 to-pink-600">
+              Free Fire Tournament
+            </AnimatedGradientText>
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}

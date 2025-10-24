@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,6 +19,7 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
+import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
 
 const adminLoginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -38,35 +39,18 @@ const AdminLogin = () => {
   });
   const navigate = useNavigate();
 
-
   const onSubmit = async (data: AdminLoginFormData) => {
     setIsLoading(true);
     try {
-      let { error } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
-      });
-
-      if (error) {
-        // Auto-create the admin account if it doesn't exist
-        const { error: signUpError } = await supabase.auth.signUp({
-          email: data.email,
-          password: data.password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/admin`,
-          },
-        });
-        if (signUpError) throw signUpError;
-        // Try signing in again
-        const retry = await supabase.auth.signInWithPassword({
-          email: data.email,
-          password: data.password,
-        });
-        if (retry.error) throw retry.error;
+      // Admin credentials: ishukriitpatna@gmail.com / ISHUkr75@
+      if (data.email === "ishukriitpatna@gmail.com" && data.password === "ISHUkr75@") {
+        // Store admin session in localStorage
+        localStorage.setItem("adminAuth", "true");
+        toast.success("Login successful!");
+        navigate("/admin/dashboard");
+      } else {
+        throw new Error("Invalid credentials");
       }
-
-      toast.success("Login successful!");
-      navigate("/admin/dashboard");
     } catch (error: any) {
       toast.error(error.message || "Invalid credentials");
     } finally {
@@ -95,8 +79,10 @@ const AdminLogin = () => {
               >
                 <Shield className="h-10 w-10 text-white" />
               </motion.div>
-              <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Admin Login
+              <h1 className="text-3xl font-bold mb-2">
+                <AnimatedGradientText colors="from-blue-500 via-purple-500 to-pink-500">
+                  Admin Login
+                </AnimatedGradientText>
               </h1>
               <p className="text-muted-foreground">
                 Access the tournament management dashboard

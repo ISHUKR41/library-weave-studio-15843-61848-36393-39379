@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
 import heroBg from "@/assets/hero-bg.jpg";
+import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
 
 const Index = () => {
   const features = [
@@ -70,9 +71,9 @@ const Index = () => {
             className="text-center space-y-8"
           >
             <h1 className="text-5xl md:text-7xl font-bold">
-              <span className="bg-gradient-primary bg-clip-text text-transparent">
+              <AnimatedGradientText colors="from-orange-500 via-red-500 to-pink-600">
                 Elite Gaming
-              </span>
+              </AnimatedGradientText>
               <br />
               <span className="text-foreground">Tournaments</span>
             </h1>
@@ -104,7 +105,11 @@ const Index = () => {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-4xl font-bold mb-4">Why Choose Us</h2>
+            <h2 className="text-4xl font-bold mb-4">
+              <AnimatedGradientText colors="from-cyan-500 via-blue-500 to-purple-600">
+                Why Choose Us
+              </AnimatedGradientText>
+            </h2>
             <p className="text-muted-foreground text-lg">
               Professional gaming experience with guaranteed prizes
             </p>
@@ -140,7 +145,11 @@ const Index = () => {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-4xl font-bold mb-4">Choose Your Game</h2>
+            <h2 className="text-4xl font-bold mb-4">
+              <AnimatedGradientText colors="from-green-500 via-teal-500 to-cyan-600">
+                Choose Your Game
+              </AnimatedGradientText>
+            </h2>
             <p className="text-muted-foreground text-lg">
               Select your preferred battle royale game and start competing
             </p>
