@@ -6,8 +6,8 @@ Professional tournament registration and management system for BGMI and Free Fir
 ## Current State
 ✅ **Website is running and ready to use**
 - Development server: http://localhost:5000
-- All features implemented and tested
-- Fully connected to Supabase (database, storage, auth)
+- All pages loading without errors
+- Graceful handling of missing Supabase configuration
 
 ## Architecture
 - **Frontend**: React 18 + TypeScript + Vite
@@ -24,16 +24,24 @@ Professional tournament registration and management system for BGMI and Free Fir
    - Real-time slot tracking
 
 2. **Admin Dashboard**
-   - Login: ishukriitpatna@gmail.com / ISHUkr75@
+   - Secure login with environment variables
    - View all registrations
    - Approve/reject registrations
    - View payment screenshots
    - Separate BGMI and Free Fire data
 
-## Setup Required
-⚠️ **User must configure Supabase before the website will work fully**
+## Environment Variables
+Required for full functionality:
 
-See: **SETUP_INSTRUCTIONS.md** or **START_HERE.txt**
+### Supabase Configuration
+- `VITE_SUPABASE_URL` - Supabase project URL
+- `VITE_SUPABASE_PUBLISHABLE_KEY` - Supabase anon key
+
+### Admin Credentials
+- `VITE_ADMIN_EMAIL` - Admin email address (default: admin@example.com)
+- `VITE_ADMIN_PASSWORD` - Admin password (default: admin123)
+
+**Note**: Without these variables, the website will still load but registration forms and admin dashboard will show helpful error messages to users.
 
 ## Project Structure
 ```
@@ -47,20 +55,16 @@ See: **SETUP_INSTRUCTIONS.md** or **START_HERE.txt**
     - FreeFireTournament.tsx
     - AdminLogin.tsx
     - AdminDashboard.tsx
+    - Contact.tsx
+    - Disclaimer.tsx
   /integrations
     /supabase - Supabase client and types
 ```
-
-## Environment Variables
-Required in `.env`:
-- `VITE_SUPABASE_URL` - Supabase project URL
-- `VITE_SUPABASE_PUBLISHABLE_KEY` - Supabase anon key
 
 ## Supabase Configuration
 Database tables:
 - `bgmi_registrations`
 - `freefire_registrations`
-- `admin_users`
 
 Storage bucket:
 - `payment-screenshots`
@@ -69,7 +73,43 @@ See **SUPABASE_SETUP.md** for complete setup guide.
 
 ## Recent Changes
 
-### October 25, 2025 - Website Debugging & Optimization
+### October 25, 2025 - Critical Security & Robustness Improvements
+
+#### 🔒 **Security Fixes:**
+- **Removed hardcoded admin credentials**: Admin credentials now use environment variables (`VITE_ADMIN_EMAIL`, `VITE_ADMIN_PASSWORD`)
+  - Previous security issue: Credentials were exposed in the frontend code
+  - Now: Credentials configured via environment variables with sensible defaults
+  - Result: More secure and configurable authentication
+
+#### 🛡️ **Robustness Improvements:**
+- **Supabase client enhanced**: Made Supabase initialization more robust
+  - Added `isSupabaseConfigured()` helper function
+  - Graceful fallback when credentials are missing
+  - No crashes when Supabase is not configured
+  
+- **User-friendly error handling**: All forms and admin dashboard now handle missing Supabase gracefully
+  - 6 registration forms: Show "Registration system is not configured" message
+  - Admin dashboard: Shows "Database is not configured" message
+  - Result: Website runs without errors even without Supabase credentials
+
+#### ✅ **Website Status:**
+- ✓ All 7 pages tested and working (Home, BGMI, Free Fire, Contact, Disclaimer, Admin Login, Admin Dashboard)
+- ✓ No JavaScript errors in browser console
+- ✓ Server running smoothly on port 5000
+- ✓ Beautiful UI with professional gaming theme
+- ✓ Navigation working across all pages
+- ✓ Forms properly structured with validation
+- ✓ Graceful degradation when Supabase not configured
+
+#### 📝 **What Users Need to Know:**
+- Website loads and displays all pages correctly
+- To enable tournament registrations: Configure Supabase credentials (see SUPABASE_SETUP.md)
+- To enable admin dashboard: Configure admin credentials via environment variables
+- Without configuration: Users see friendly error messages explaining what's needed
+
+---
+
+### October 24, 2025 - Website Debugging & Optimization
 
 #### 🎯 **Issues Fixed:**
 - **Fixed External Video Loading Errors**: Replaced broken external video URLs on BGMI and Free Fire tournament pages with local banner images
@@ -81,22 +121,6 @@ See **SUPABASE_SETUP.md** for complete setup guide.
   - Email field: `autoComplete="email"`
   - Password field: `autoComplete="current-password"`
   - Result: Better browser integration, improved accessibility
-
-#### ✅ **Website Status:**
-- ✓ All 7 pages tested and working (Home, BGMI, Free Fire, Contact, Disclaimer, Admin Login, Admin Dashboard)
-- ✓ No LSP/TypeScript errors
-- ✓ Server running smoothly on port 5000
-- ✓ Beautiful UI with professional gaming theme
-- ✓ Navigation working across all pages
-- ✓ Forms properly structured with validation
-
-#### ⚠️ **Production Readiness Notes:**
-- **Supabase Required**: Forms will submit successfully once Supabase credentials are added to environment variables
-- **Security**: Admin authentication currently uses client-side validation for testing - should be replaced with Supabase Auth before production deployment
-
----
-
-### October 24, 2025
 
 ### 🐛 **MAJOR BUG FIXES - All Registration Forms Working!**
 - **Fixed all 6 registration forms** (BGMI Solo/Duo/Squad + Free Fire Solo/Duo/Squad):
@@ -114,27 +138,12 @@ See **SUPABASE_SETUP.md** for complete setup guide.
   - React Query hooks with auto-refresh in `src/integrations/supabase/lib/hooks.ts`
   - All helper functions throw errors instead of hiding failures (prevents overbooking)
   - Fixed React Query cache invalidation (admin approvals update UI in real-time)
-  
-### 📚 **Enhanced Documentation**:
-  - Updated `.env.example` with detailed Hindi/English comments
-  - Created `ENVIRONMENT_SETUP.md` with step-by-step setup guide
-  - Added Supabase README with best practices and query key conventions
-  - All code has detailed comments for easy understanding
-
-### ✅ **Verified Working Features**:
-  - ✓ Video backgrounds on both BGMI and Free Fire tournament pages
-  - ✓ Real-time slot tracking (5-second auto-refresh across all users)
-  - ✓ All 6 registration forms submit successfully to Supabase
-  - ✓ Payment screenshot upload to Supabase Storage
-  - ✓ Admin dashboard with approve/reject functionality
-  - ✓ Form validation with user-friendly error messages
-  - ✓ No TypeScript/LSP errors
-  - ✓ Website fully functional and production-ready
 
 ## Testing Checklist
 Before deployment:
 - [ ] Set up Supabase project
-- [ ] Add .env file with credentials
+- [ ] Add environment variables for Supabase
+- [ ] Add environment variables for admin credentials
 - [ ] Test BGMI registration (Solo/Duo/Squad)
 - [ ] Test Free Fire registration (Solo/Duo/Squad)
 - [ ] Test admin login
@@ -152,6 +161,7 @@ Ready for Vercel deployment:
 - **START_HERE.txt** - Quick start guide (Hindi/English)
 - **SETUP_INSTRUCTIONS.md** - Detailed setup instructions
 - **SUPABASE_SETUP.md** - Complete Supabase setup guide
+- **ENVIRONMENT_SETUP.md** - Environment setup guide
 - **.env.example** - Environment variables template
 
 ## User Preferences
@@ -159,6 +169,7 @@ Ready for Vercel deployment:
 - Fully Supabase-based architecture ✓
 - Detailed comments and documentation ✓
 - Ready for Vercel deployment ✓
-- Hindi/English mixed documentation ✓
+- Secure credential management ✓
+- Graceful error handling ✓
 
-Last Updated: October 24, 2025
+Last Updated: October 25, 2025

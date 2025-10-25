@@ -4,10 +4,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "framer-motion";
-import { Lock, Mail, Loader2, Shield } from "lucide-react";
+import { Lock, Mail, Loader2, Shield, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Form,
   FormControl,
@@ -28,8 +29,8 @@ const adminLoginSchema = z.object({
 type AdminLoginFormData = z.infer<typeof adminLoginSchema>;
 
 // Admin credentials from environment variables
-const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || "admin@example.com";
-const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || "admin123";
+const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL;
+const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD;
 
 const AdminLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -42,9 +43,16 @@ const AdminLogin = () => {
   });
   const navigate = useNavigate();
 
+  // Check if admin credentials are configured
+  const isAdminConfigured = Boolean(ADMIN_EMAIL && ADMIN_PASSWORD);
+
   const onSubmit = async (data: AdminLoginFormData) => {
     setIsLoading(true);
     try {
+      if (!isAdminConfigured) {
+        throw new Error("Admin credentials are not configured. Please contact the system administrator.");
+      }
+
       if (data.email === ADMIN_EMAIL && data.password === ADMIN_PASSWORD) {
         localStorage.setItem("adminAuth", "true");
         toast.success("Login successful!");
@@ -90,6 +98,15 @@ const AdminLogin = () => {
               </p>
             </div>
 
+            {!isAdminConfigured && (
+              <Alert variant="destructive" className="mb-6">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  Admin credentials are not configured. Please set VITE_ADMIN_EMAIL and VITE_ADMIN_PASSWORD environment variables.
+                </AlertDescription>
+              </Alert>
+            )}
+
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
@@ -107,7 +124,7 @@ const AdminLogin = () => {
                             placeholder="admin@example.com"
                             autoComplete="email"
                             className="pl-10 bg-background transition-all focus:ring-2 focus:ring-primary"
-                            disabled={isLoading}
+                            disabled={isLoading || !isAdminConfigured}
                             data-testid="input-admin-email"
                           />
                         </div>
@@ -132,7 +149,7 @@ const AdminLogin = () => {
                             placeholder="••••••••"
                             autoComplete="current-password"
                             className="pl-10 bg-background transition-all focus:ring-2 focus:ring-primary"
-                            disabled={isLoading}
+                            disabled={isLoading || !isAdminConfigured}
                             data-testid="input-admin-password"
                           />
                         </div>
@@ -146,7 +163,7 @@ const AdminLogin = () => {
                   type="submit" 
                   className="w-full shadow-lg hover:shadow-glow transition-all" 
                   size="lg" 
-                  disabled={isLoading}
+                  disabled={isLoading || !isAdminConfigured}
                   data-testid="button-admin-login"
                 >
                   {isLoading ? (
