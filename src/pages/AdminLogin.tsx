@@ -104,6 +104,7 @@ const AdminLogin = () => {
                             {...field}
                             type="email"
                             placeholder="admin@example.com"
+                            autoComplete="email"
                             className="pl-10 bg-background transition-all focus:ring-2 focus:ring-primary"
                             disabled={isLoading}
                           />
@@ -127,6 +128,7 @@ const AdminLogin = () => {
                             {...field}
                             type="password"
                             placeholder="••••••••"
+                            autoComplete="current-password"
                             className="pl-10 bg-background transition-all focus:ring-2 focus:ring-primary"
                             disabled={isLoading}
                           />

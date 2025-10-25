@@ -49,17 +49,12 @@ const FreeFireTournament = () => {
     <div className="min-h-screen">
       <Navbar />
       
-      {/* Hero Section with Background Video */}
+      {/* Hero Section with Background Image */}
       <section className="relative h-96 flex items-center justify-center overflow-hidden mt-16">
-        <video 
-          autoPlay 
-          loop 
-          muted 
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-        >
-          <source src="https://www.ff.garena.com/assets/video/home-bg.mp4" type="video/mp4" />
-        </video>
+        <div 
+          className="absolute inset-0 w-full h-full bg-cover bg-center"
+          style={{ backgroundImage: `url(${freeFireBanner})` }}
+        />
         <div className="absolute inset-0 bg-gradient-to-b from-background/80 to-background" />
         
         <div className="relative z-10 text-center space-y-4">
