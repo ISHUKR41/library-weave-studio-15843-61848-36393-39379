@@ -17,7 +17,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
 
@@ -27,6 +26,10 @@ const adminLoginSchema = z.object({
 });
 
 type AdminLoginFormData = z.infer<typeof adminLoginSchema>;
+
+// Admin credentials from environment variables
+const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || "admin@example.com";
+const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || "admin123";
 
 const AdminLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -42,9 +45,7 @@ const AdminLogin = () => {
   const onSubmit = async (data: AdminLoginFormData) => {
     setIsLoading(true);
     try {
-      // Admin credentials: ishukriitpatna@gmail.com / ISHUkr75@
-      if (data.email === "ishukriitpatna@gmail.com" && data.password === "ISHUkr75@") {
-        // Store admin session in localStorage
+      if (data.email === ADMIN_EMAIL && data.password === ADMIN_PASSWORD) {
         localStorage.setItem("adminAuth", "true");
         toast.success("Login successful!");
         navigate("/admin/dashboard");
@@ -107,6 +108,7 @@ const AdminLogin = () => {
                             autoComplete="email"
                             className="pl-10 bg-background transition-all focus:ring-2 focus:ring-primary"
                             disabled={isLoading}
+                            data-testid="input-admin-email"
                           />
                         </div>
                       </FormControl>
@@ -131,6 +133,7 @@ const AdminLogin = () => {
                             autoComplete="current-password"
                             className="pl-10 bg-background transition-all focus:ring-2 focus:ring-primary"
                             disabled={isLoading}
+                            data-testid="input-admin-password"
                           />
                         </div>
                       </FormControl>
@@ -144,6 +147,7 @@ const AdminLogin = () => {
                   className="w-full shadow-lg hover:shadow-glow transition-all" 
                   size="lg" 
                   disabled={isLoading}
+                  data-testid="button-admin-login"
                 >
                   {isLoading ? (
                     <>
