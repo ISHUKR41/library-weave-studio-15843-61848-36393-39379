@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, isSupabaseConfigured } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import pubgQR from "@/assets/pubg_qr.jpg";
 import { useDropzone } from "react-dropzone";
@@ -49,6 +49,11 @@ const FreeFireSoloForm = ({ entryFee }: FreeFireSoloFormProps) => {
   const onSubmit = async (formData: FreeFireSoloFormData) => {
     console.log("Starting Free Fire Solo registration submission...");
     console.log("Form data:", formData);
+    
+    if (!isSupabaseConfigured()) {
+      toast.error("Registration system is not configured. Please contact the administrator.");
+      return;
+    }
     
     if (!screenshot) {
       console.error("Screenshot validation failed: No screenshot file");

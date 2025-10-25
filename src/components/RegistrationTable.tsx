@@ -14,7 +14,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, X, Eye, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, isSupabaseConfigured } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface RegistrationTableProps {
@@ -48,9 +48,12 @@ const RegistrationTable = ({ game, type }: RegistrationTableProps) => {
   }, [selectedRegistration]);
   const queryClient = useQueryClient();
 
-  const { data: registrations, isLoading } = useQuery({
+  const { data: registrations, isLoading, error } = useQuery({
     queryKey: [`${game}-${type}-registrations`],
     queryFn: async () => {
+      if (!isSupabaseConfigured()) {
+        throw new Error("Database is not configured");
+      }
       const table = game === "bgmi" ? "bgmi_registrations" : "freefire_registrations";
       const { data, error } = await (supabase as any)
         .from(table)
@@ -62,6 +65,7 @@ const RegistrationTable = ({ game, type }: RegistrationTableProps) => {
       return data;
     },
     refetchInterval: 5000,
+    retry: false,
   });
 
   const handleStatusUpdate = async (id: string, status: "approved" | "rejected") => {
@@ -86,6 +90,14 @@ const RegistrationTable = ({ game, type }: RegistrationTableProps) => {
     return (
       <Card className="p-8 flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="p-8 text-center">
+        <p className="text-muted-foreground">Database is not configured. Please contact the administrator to set up the registration system.</p>
       </Card>
     );
   }
