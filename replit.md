@@ -67,7 +67,36 @@ Storage bucket:
 
 See **SUPABASE_SETUP.md** for complete setup guide.
 
-## Recent Changes (October 24, 2025)
+## Recent Changes
+
+### October 25, 2025 - Website Debugging & Optimization
+
+#### 🎯 **Issues Fixed:**
+- **Fixed External Video Loading Errors**: Replaced broken external video URLs on BGMI and Free Fire tournament pages with local banner images
+  - Previously: Videos from external CDNs (cloudflare, garena) were causing DNS errors
+  - Now: Using local `bgmi-banner.jpg` and `freefire-banner.jpg` as CSS backgrounds
+  - Result: No more network errors, faster page load, better performance
+
+- **Improved Form UX**: Added autocomplete attributes to admin login form
+  - Email field: `autoComplete="email"`
+  - Password field: `autoComplete="current-password"`
+  - Result: Better browser integration, improved accessibility
+
+#### ✅ **Website Status:**
+- ✓ All 7 pages tested and working (Home, BGMI, Free Fire, Contact, Disclaimer, Admin Login, Admin Dashboard)
+- ✓ No LSP/TypeScript errors
+- ✓ Server running smoothly on port 5000
+- ✓ Beautiful UI with professional gaming theme
+- ✓ Navigation working across all pages
+- ✓ Forms properly structured with validation
+
+#### ⚠️ **Production Readiness Notes:**
+- **Supabase Required**: Forms will submit successfully once Supabase credentials are added to environment variables
+- **Security**: Admin authentication currently uses client-side validation for testing - should be replaced with Supabase Auth before production deployment
+
+---
+
+### October 24, 2025
 
 ### 🐛 **MAJOR BUG FIXES - All Registration Forms Working!**
 - **Fixed all 6 registration forms** (BGMI Solo/Duo/Squad + Free Fire Solo/Duo/Squad):
